@@ -33,31 +33,28 @@ pipeline {
             }
         }
 
-        stage('Configure kubectl') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                    sh '''
-                        aws eks update-kubeconfig \
-                            --name $CLUSTER_NAME \
-                            --region $AWS_REGION
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy with Helm') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                    sh '''
-                        helm upgrade --install hello-world ./helm/hello-world \
-                            --set image.repository=$ECR_REPO \
-                            --set image.tag=$GIT_COMMIT \
-                            --wait
-                    '''
-                }
-            }
-        }
+       stage('Configure kubectl') {
+    steps {
+        sh '''
+            aws eks update-kubeconfig \
+                --name $CLUSTER_NAME \
+                --region $AWS_REGION \
+                --kubeconfig /tmp/kubeconfig
+        '''
     }
+}
+
+stage('Deploy with Helm') {
+    steps {
+        sh '''
+            export KUBECONFIG=/tmp/kubeconfig
+            helm upgrade --install hello-world ./helm/hello-world \
+                --set image.repository=$ECR_REPO \
+                --set image.tag=$GIT_COMMIT \
+                --wait
+        '''
+    }
+}
 
     post {
         always {
