@@ -1,0 +1,47 @@
+name: CI - Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - gitops
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: 621646470863.dkr.ecr.us-east-1.amazonaws.com/hello-world-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        run: |
+          docker buildx create --use
+          docker buildx build --platform linux/amd64 \
+            -t $ECR_REPO:${{ github.sha }} \
+            -t $ECR_REPO:latest \
+            ./hello-world-app \
+            --push
+
+      - name: Update Helm values with new image tag
+        run: |
+          sed -i "s|tag:.*|tag: \"${{ github.sha }}\"|" helm/hello-world/values.yaml
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add helm/hello-world/values.yaml
+          git commit -m "ci: update image tag to ${{ github.sha }}"
+          git push
