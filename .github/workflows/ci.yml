@@ -5,6 +5,9 @@ on:
     branches:
       - gitops
 
+permissions:
+  contents: write
+
 env:
   AWS_REGION: us-east-1
   ECR_REPO: 621646470863.dkr.ecr.us-east-1.amazonaws.com/hello-world-app
@@ -42,6 +45,7 @@ jobs:
           sed -i "s|tag:.*|tag: \"${{ github.sha }}\"|" helm/hello-world/values.yaml
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/cwhitaker777/Application_Deployment.git
           git add helm/hello-world/values.yaml
           git commit -m "ci: update image tag to ${{ github.sha }}"
           git push
