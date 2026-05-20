@@ -1,0 +1,31 @@
+# Dependencies (installed fresh inside Docker)
+node_modules
+npm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# CI/CD & IaC (not needed in container)
+.github
+Jenkinsfile
+terraform/
+k8s/
+helm/
+
+# Docs
+README.md
+*.md
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Environment files (never bake secrets into image)
+.env
+.env.*
+
+# Test files
+*.test.js
+*.spec.js
+coverage/
