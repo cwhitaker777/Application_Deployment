@@ -1,4 +1,4 @@
-# Tech Challenge 2 — Application Deployment
+# Tech Challenge — Application Deployment
 
 > Containerization · Infrastructure as Code · Kubernetes · CI/CD · GitOps
 
